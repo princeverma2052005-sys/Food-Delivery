@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crave — Food Delivery</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --bg2: #141414;
+    --bg3: #1c1c1c;
+    --card: #181818;
+    --border: rgba(255,255,255,0.07);
+    --accent: #e8b86d;
+    --accent2: #c9913a;
+    --text: #f0ede8;
+    --muted: #8a8680;
+    --danger: #e05252;
+    --success: #4caf72;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: rgba(13,13,13,0.92);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.7rem; font-weight: 900;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    cursor: pointer;
+  }
+  .logo span { color: var(--text); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    color: var(--muted); text-decoration: none;
+    font-size: 0.9rem; font-weight: 500;
+    transition: color 0.2s;
+    cursor: pointer;
+  }
+  .nav-links a:hover, .nav-links a.active { color: var(--text); }
+  .nav-right { display: flex; align-items: center; gap: 1rem; }
+  .cart-btn {
+    background: var(--accent); color: #0d0d0d;
+    border: none; border-radius: var(--radius-sm);
+    padding: 0.5rem 1.2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem; font-weight: 500;
+    cursor: pointer; transition: background 0.2s, transform 0.1s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .cart-btn:hover { background: var(--accent2); }
+  .cart-btn:active { transform: scale(0.97); }
+  .cart-count {
+    background: #0d0d0d; color: var(--accent);
+    border-radius: 50%; width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.75rem; font-weight: 700;
+  }
+
+  /* ─── PAGES ─── */
+  .page { display: none; animation: fadeIn 0.4s ease; }
+  .page.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: calc(100vh - 64px);
+    display: flex; align-items: center;
+    padding: 4rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 60% at 70% 50%, rgba(232,184,109,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-content { max-width: 580px; }
+  .hero-tag {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(232,184,109,0.1);
+    border: 1px solid rgba(232,184,109,0.2);
+    border-radius: 100px; padding: 6px 16px;
+    font-size: 0.8rem; color: var(--accent);
+    margin-bottom: 2rem; font-weight: 500;
+  }
+  .hero-tag::before { content: '●'; font-size: 0.5rem; }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    line-height: 1.05;
+    font-weight: 900;
+    margin-bottom: 1.5rem;
+  }
+  .hero h1 em { color: var(--accent); font-style: italic; }
+  .hero p { color: var(--muted); font-size: 1.1rem; margin-bottom: 2.5rem; max-width: 420px; }
+  .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--accent); color: #0d0d0d;
+    border: none; border-radius: var(--radius-sm);
+    padding: 0.9rem 2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary:hover { background: var(--accent2); transform: translateY(-2px); }
+  .btn-ghost {
+    background: transparent; color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem 2rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-ghost:hover { border-color: rgba(255,255,255,0.2); background: var(--bg2); }
+  .hero-visual {
+    flex: 1; display: flex; justify-content: center; align-items: center;
+    position: relative; min-height: 420px;
+  }
+  .hero-ring {
+    width: 380px; height: 380px;
+    border-radius: 50%;
+    border: 1px solid rgba(232,184,109,0.12);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .hero-ring::before {
+    content: '';
+    position: absolute;
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    border: 1px solid rgba(232,184,109,0.08);
+  }
+  .hero-emoji { font-size: 8rem; filter: drop-shadow(0 0 40px rgba(232,184,109,0.3)); }
+  .hero-float {
+    position: absolute;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    font-size: 0.85rem; font-weight: 500;
+  }
+  .hero-float:nth-child(2) { top: 20px; right: 10%; }
+  .hero-float:nth-child(3) { bottom: 20px; left: 10%; }
+  .hero-float .sub { color: var(--muted); font-size: 0.75rem; font-weight: 400; }
+
+  /* ─── STATS ─── */
+  .stats { display: flex; gap: 2px; background: var(--border); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .stat {
+    flex: 1; background: var(--bg);
+    padding: 2rem; text-align: center;
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem; font-weight: 700;
+    color: var(--accent); display: block;
+  }
+  .stat-lbl { color: var(--muted); font-size: 0.85rem; }
+
+  /* ─── SECTION ─── */
+  .section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
+  .section-header { margin-bottom: 3rem; }
+  .section-tag {
+    font-size: 0.8rem; font-weight: 500;
+    color: var(--accent); letter-spacing: 1px;
+    text-transform: uppercase; margin-bottom: 0.75rem;
+    display: block;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 700; line-height: 1.15;
+  }
+
+  /* ─── CATEGORIES ─── */
+  .categories { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 3rem; }
+  .cat-pill {
+    padding: 0.5rem 1.25rem;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--muted); font-size: 0.875rem;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .cat-pill:hover, .cat-pill.active {
+    border-color: var(--accent); color: var(--accent);
+    background: rgba(232,184,109,0.07);
+  }
+
+  /* ─── MENU CARDS ─── */
+  .food-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.25rem; }
+  .food-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .food-card:hover { transform: translateY(-4px); border-color: rgba(232,184,109,0.2); }
+  .food-card-img {
+    height: 180px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 5rem;
+    background: var(--bg3);
+    position: relative;
+  }
+  .food-badge {
+    position: absolute; top: 12px; left: 12px;
+    background: var(--accent); color: #0d0d0d;
+    border-radius: 6px; padding: 3px 10px;
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  }
+  .food-badge.veg { background: var(--success); color: #fff; }
+  .food-badge.spicy { background: var(--danger); color: #fff; }
+  .food-card-body { padding: 1.1rem; }
+  .food-card-body h3 { font-size: 1rem; font-weight: 500; margin-bottom: 0.35rem; }
+  .food-card-body p { color: var(--muted); font-size: 0.82rem; margin-bottom: 1rem; }
+  .food-card-footer { display: flex; align-items: center; justify-content: space-between; }
+  .food-price { font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--accent); }
+  .food-price small { font-family: 'DM Sans', sans-serif; font-size: 0.75rem; color: var(--muted); font-weight: 400; }
+  .add-btn {
+    background: var(--accent); color: #0d0d0d;
+    border: none; border-radius: var(--radius-sm);
+    width: 34px; height: 34px;
+    font-size: 1.2rem; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s; font-weight: 700;
+  }
+  .add-btn:hover { background: var(--accent2); transform: scale(1.08); }
+  .rating { color: var(--accent); font-size: 0.8rem; display: flex; align-items: center; gap: 4px; }
+
+  /* ─── CART PAGE ─── */
+  .cart-layout { display: grid; grid-template-columns: 1fr 360px; gap: 2rem; max-width: 1200px; margin: 0 auto; padding: 3rem 2rem; }
+  .cart-title { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; margin-bottom: 2rem; }
+  .cart-item {
+    display: flex; gap: 1rem; align-items: center;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1rem;
+    margin-bottom: 0.75rem;
+    transition: border-color 0.2s;
+  }
+  .cart-item:hover { border-color: rgba(232,184,109,0.15); }
+  .cart-item-emoji { font-size: 2.5rem; width: 60px; text-align: center; }
+  .cart-item-info { flex: 1; }
+  .cart-item-info h4 { font-weight: 500; margin-bottom: 4px; }
+  .cart-item-info p { color: var(--muted); font-size: 0.8rem; }
+  .qty-ctrl { display: flex; align-items: center; gap: 0.75rem; }
+  .qty-btn {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); border-radius: 6px;
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 1rem; transition: all 0.15s;
+  }
+  .qty-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .qty-num { font-weight: 500; min-width: 20px; text-align: center; }
+  .cart-item-price { font-family: 'Playfair Display', serif; font-size: 1.1rem; color: var(--accent); min-width: 70px; text-align: right; }
+  .remove-btn { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; transition: color 0.2s; padding: 4px; }
+  .remove-btn:hover { color: var(--danger); }
+  .order-summary {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.5rem;
+    position: sticky; top: 80px; height: fit-content;
+  }
+  .order-summary h3 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 1.5rem; }
+  .summary-row { display: flex; justify-content: space-between; margin-bottom: 0.75rem; font-size: 0.9rem; }
+  .summary-row.total { border-top: 1px solid var(--border); padding-top: 0.75rem; margin-top: 0.75rem; font-weight: 500; font-size: 1rem; }
+  .summary-row.total span:last-child { color: var(--accent); font-family: 'Playfair Display', serif; font-size: 1.2rem; }
+  .promo-row { display: flex; gap: 0.5rem; margin: 1.25rem 0; }
+  .promo-row input {
+    flex: 1; background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 0.6rem 0.85rem;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.875rem;
+    outline: none;
+  }
+  .promo-row input::placeholder { color: var(--muted); }
+  .promo-row input:focus { border-color: var(--accent); }
+  .checkout-btn {
+    width: 100%; background: var(--accent); color: #0d0d0d;
+    border: none; border-radius: var(--radius-sm);
+    padding: 1rem; font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; margin-top: 1rem;
+  }
+  .checkout-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+  .empty-cart { text-align: center; padding: 5rem 2rem; color: var(--muted); }
+  .empty-cart .big { font-size: 5rem; margin-bottom: 1rem; }
+
+  /* ─── ABOUT ─── */
+  .about-hero {
+    padding: 5rem 2rem;
+    max-width: 900px; margin: 0 auto;
+    text-align: center;
+  }
+  .about-hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 900; margin-bottom: 1.25rem;
+  }
+  .about-hero p { color: var(--muted); font-size: 1.15rem; max-width: 620px; margin: 0 auto 2.5rem; }
+  .about-divider { width: 60px; height: 2px; background: var(--accent); margin: 0 auto 3rem; }
+  .team-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1.25rem; max-width: 1000px; margin: 0 auto 5rem; padding: 0 2rem; }
+  .team-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 2rem 1.25rem;
+    text-align: center;
+  }
+  .team-avatar {
+    width: 70px; height: 70px; border-radius: 50%;
+    background: linear-gradient(135deg, rgba(232,184,109,0.2), rgba(232,184,109,0.05));
+    border: 1px solid rgba(232,184,109,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.8rem; margin: 0 auto 1rem;
+  }
+  .team-card h4 { font-weight: 500; margin-bottom: 4px; }
+  .team-card p { color: var(--muted); font-size: 0.8rem; }
+  .values-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1.25rem; max-width: 1200px; margin: 0 auto; padding: 0 2rem 5rem; }
+  .value-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 2rem;
+  }
+  .value-icon { font-size: 2rem; margin-bottom: 1rem; }
+  .value-card h3 { font-weight: 500; margin-bottom: 0.5rem; }
+  .value-card p { color: var(--muted); font-size: 0.875rem; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem;
+    background: var(--card); border: 1px solid rgba(232,184,109,0.3);
+    border-radius: var(--radius); padding: 1rem 1.5rem;
+    font-size: 0.9rem; z-index: 999;
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.3s ease;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 3rem 2rem;
+    text-align: center; color: var(--muted); font-size: 0.85rem;
+  }
+  footer .logo { display: inline-block; margin-bottom: 0.75rem; }
+
+  /* ─── SEARCH ─── */
+  .search-bar {
+    display: flex; gap: 0.75rem; margin-bottom: 2.5rem;
+  }
+  .search-input {
+    flex: 1; background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 0.8rem 1.1rem;
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem; outline: none;
+    transition: border-color 0.2s;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-input:focus { border-color: var(--accent); }
+
+  @media (max-width: 768px) {
+    .hero { flex-direction: column; text-align: center; }
+    .hero-visual { min-height: 260px; }
+    .hero-ring { width: 240px; height: 240px; }
+    .hero-emoji { font-size: 5rem; }
+    .hero-float { display: none; }
+    .hero-btns { justify-content: center; }
+    .cart-layout { grid-template-columns: 1fr; }
+    .stats { flex-direction: column; }
+    nav { padding: 0 1rem; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="showPage('home')">Crave<span>.</span></div>
+  <ul class="nav-links">
+    <li><a onclick="showPage('home')" id="nav-home" class="active">Home</a></li>
+    <li><a onclick="showPage('menu')" id="nav-menu">Menu</a></li>
+    <li><a onclick="showPage('cart')" id="nav-cart">Cart</a></li>
+    <li><a onclick="showPage('about')" id="nav-about">About</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="cart-btn" onclick="showPage('cart')">
+      🛒 Cart <span class="cart-count" id="cart-count">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════════ HOME PAGE ═══════════════ -->
+<div class="page active" id="page-home">
+  <section style="display:flex; align-items:center; max-width:1200px; margin:0 auto; padding:4rem 2rem; gap:3rem; flex-wrap:wrap;">
+    <div class="hero-content">
+      <div class="hero-tag">Free delivery on first order</div>
+      <h1>Food That <em>Speaks</em><br>to Your Soul</h1>
+      <p>Curated restaurants, lightning-fast delivery, and a menu that spans the globe — all in one place.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="showPage('menu')">Explore Menu</button>
+        <button class="btn-ghost" onclick="showPage('about')">Our Story</button>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-ring">
+        <div class="hero-emoji">🍜</div>
+        <div class="hero-float" style="position:absolute;top:20px;right:-40px;">
+          <div>⭐ 4.9</div>
+          <div class="sub">Top Rated</div>
+        </div>
+        <div class="hero-float" style="position:absolute;bottom:20px;left:-40px;">
+          <div>🕐 25 min</div>
+          <div class="sub">Avg delivery</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats">
+    <div class="stat"><span class="stat-num">50k+</span><span class="stat-lbl">Happy Customers</span></div>
+    <div class="stat"><span class="stat-num">200+</span><span class="stat-lbl">Partner Restaurants</span></div>
+    <div class="stat"><span class="stat-num">25min</span><span class="stat-lbl">Average Delivery</span></div>
+    <div class="stat"><span class="stat-num">4.9★</span><span class="stat-lbl">Customer Rating</span></div>
+  </div>
+
+  <!-- Featured items on homepage -->
+  <div class="section">
+    <div class="section-header">
+      <span class="section-tag">Handpicked</span>
+      <h2 class="section-title">Today's Top Picks</h2>
+    </div>
+    <div class="food-grid" id="home-featured"></div>
+    <div style="text-align:center; margin-top:2.5rem;">
+      <button class="btn-ghost" onclick="showPage('menu')">View Full Menu →</button>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div style="background:var(--bg2); padding:5rem 2rem; border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+    <div style="max-width:1000px; margin:0 auto;">
+      <div class="section-header" style="text-align:center; margin-bottom:3.5rem;">
+        <span class="section-tag">Process</span>
+        <h2 class="section-title">How Crave Works</h2>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:2rem;">
+        <div style="text-align:center;">
+          <div style="font-size:2.5rem; margin-bottom:1rem;">📍</div>
+          <h3 style="font-weight:500; margin-bottom:0.5rem;">Set Location</h3>
+          <p style="color:var(--muted); font-size:0.875rem;">Enter your delivery address to see nearby restaurants and menus.</p>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:2.5rem; margin-bottom:1rem;">🍽️</div>
+          <h3 style="font-weight:500; margin-bottom:0.5rem;">Pick Your Meal</h3>
+          <p style="color:var(--muted); font-size:0.875rem;">Browse hundreds of dishes across every cuisine imaginable.</p>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:2.5rem; margin-bottom:1rem;">💳</div>
+          <h3 style="font-weight:500; margin-bottom:0.5rem;">Pay Securely</h3>
+          <p style="color:var(--muted); font-size:0.875rem;">Multiple payment options — cards, wallets, or cash on delivery.</p>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:2.5rem; margin-bottom:1rem;">🛵</div>
+          <h3 style="font-weight:500; margin-bottom:0.5rem;">Fast Delivery</h3>
+          <p style="color:var(--muted); font-size:0.875rem;">Track your order live and receive it at your doorstep.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="logo">Crave<span style="color:var(--text);">.</span></div>
+    <p style="margin-top:0.5rem;">© 2025 Crave Food Delivery. All rights reserved.</p>
+  </footer>
+</div>
+
+<!-- ═══════════════ MENU PAGE ═══════════════ -->
+<div class="page" id="page-menu">
+  <div class="section">
+    <div class="section-header">
+      <span class="section-tag">Full Menu</span>
+      <h2 class="section-title">What Are You Craving?</h2>
+    </div>
+    <input class="search-input" style="display:block;width:100%;margin-bottom:1.5rem;" id="search-input" type="text" placeholder="Search dishes, cuisines, restaurants..." oninput="filterMenu()" />
+    <div class="categories" id="cat-pills"></div>
+    <div class="food-grid" id="menu-grid"></div>
+  </div>
+  <footer>
+    <div class="logo">Crave<span style="color:var(--text);">.</span></div>
+    <p style="margin-top:0.5rem;">© 2025 Crave Food Delivery. All rights reserved.</p>
+  </footer>
+</div>
+
+<!-- ═══════════════ CART PAGE ═══════════════ -->
+<div class="page" id="page-cart">
+  <div class="cart-layout">
+    <div>
+      <h2 class="cart-title">Your Cart</h2>
+      <div id="cart-items"></div>
+    </div>
+    <div class="order-summary">
+      <h3>Order Summary</h3>
+      <div class="summary-row"><span style="color:var(--muted)">Subtotal</span><span id="sum-sub">₹0</span></div>
+      <div class="summary-row"><span style="color:var(--muted)">Delivery fee</span><span id="sum-del">₹49</span></div>
+      <div class="summary-row"><span style="color:var(--muted)">Taxes (5%)</span><span id="sum-tax">₹0</span></div>
+      <div class="promo-row">
+        <input type="text" id="promo-input" placeholder="Promo code" />
+        <button class="btn-primary" style="white-space:nowrap;padding:0.6rem 1rem;font-size:0.875rem;" onclick="applyPromo()">Apply</button>
+      </div>
+      <div id="promo-msg" style="font-size:0.8rem;margin-bottom:0.5rem;"></div>
+      <div class="summary-row total"><span>Total</span><span id="sum-total">₹0</span></div>
+      <button class="checkout-btn" onclick="checkout()">Place Order →</button>
+      <p style="text-align:center;color:var(--muted);font-size:0.78rem;margin-top:1rem;">Estimated delivery: 20–35 minutes</p>
+    </div>
+  </div>
+  <footer style="max-width:1200px;margin:0 auto;">
+    <div class="logo">Crave<span style="color:var(--text);">.</span></div>
+    <p style="margin-top:0.5rem;">© 2025 Crave Food Delivery. All rights reserved.</p>
+  </footer>
+</div>
+
+<!-- ═══════════════ ABOUT PAGE ═══════════════ -->
+<div class="page" id="page-about">
+  <div class="about-hero">
+    <div class="hero-tag">Est. 2022</div>
+    <h1>Food Is Our<br><em style="color:var(--accent);font-style:italic;">Love Language</em></h1>
+    <p>We started Crave with one simple belief: great food should reach everyone, everywhere, every time — without compromise.</p>
+    <div class="about-divider"></div>
+  </div>
+
+  <div style="max-width:800px;margin:0 auto 5rem;padding:0 2rem;text-align:center;">
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:3rem;">
+      <blockquote style="font-family:'Playfair Display',serif;font-size:1.5rem;font-style:italic;line-height:1.5;color:var(--text);">
+        "Great food isn't just about taste — it's about the story behind it, the hands that made it, and the smiles it creates."
+      </blockquote>
+      <p style="color:var(--muted);margin-top:1.25rem;font-size:0.875rem;">— Aryan Sharma, Founder & CEO</p>
+    </div>
+  </div>
+
+  <div class="section-header" style="text-align:center;padding:0 2rem;margin-bottom:2.5rem;">
+    <span class="section-tag">The People</span>
+    <h2 class="section-title">Meet Our Team</h2>
+  </div>
+  <div class="team-grid">
+    <div class="team-card"><div class="team-avatar">👨‍💼</div><h4>Aryan Sharma</h4><p>Founder & CEO</p></div>
+    <div class="team-card"><div class="team-avatar">👩‍🍳</div><h4>Priya Nair</h4><p>Head of Curation</p></div>
+    <div class="team-card"><div class="team-avatar">👨‍💻</div><h4>Rohan Gupta</h4><p>CTO</p></div>
+    <div class="team-card"><div class="team-avatar">👩‍🎨</div><h4>Aisha Khan</h4><p>Lead Designer</p></div>
+  </div>
+
+  <div class="section-header" style="text-align:center;padding:0 2rem;margin-bottom:2.5rem;">
+    <span class="section-tag">What We Stand For</span>
+    <h2 class="section-title">Our Values</h2>
+  </div>
+  <div class="values-grid">
+    <div class="value-card"><div class="value-icon">⚡</div><h3>Speed First</h3><p>We obsess over delivery times so your food arrives hot and fresh, always.</p></div>
+    <div class="value-card"><div class="value-icon">🌿</div><h3>Sustainable</h3><p>Eco-friendly packaging and partnerships with local farms to reduce our footprint.</p></div>
+    <div class="value-card"><div class="value-icon">🤝</div><h3>Partner First</h3><p>We treat our restaurant partners as family, not just vendors.</p></div>
+    <div class="value-card"><div class="value-icon">💎</div><h3>Premium Quality</h3><p>Every dish on our platform passes our quality standards before reaching you.</p></div>
+  </div>
+  <footer>
+    <div class="logo">Crave<span style="color:var(--text);">.</span></div>
+    <p style="margin-top:0.5rem;">© 2025 Crave Food Delivery. All rights reserved.</p>
+  </footer>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA ───
+const menuData = [
+  { id:1, name:'Butter Chicken', desc:'Creamy tomato-based curry with tender chicken', price:299, emoji:'🍛', cat:'Indian', badge:'Popular', rating:4.9 },
+  { id:2, name:'Margherita Pizza', desc:'Classic basil, tomato and fresh mozzarella', price:349, emoji:'🍕', cat:'Italian', badge:'veg', rating:4.8 },
+  { id:3, name:'Sushi Platter', desc:'12-piece assorted nigiri and maki rolls', price:599, emoji:'🍣', cat:'Japanese', badge:'Popular', rating:4.9 },
+  { id:4, name:'Smash Burger', desc:'Double patty, cheddar, caramelised onions', price:279, emoji:'🍔', cat:'American', badge:'spicy', rating:4.7 },
+  { id:5, name:'Pad Thai', desc:'Stir-fried rice noodles with peanuts & lime', price:259, emoji:'🍜', cat:'Thai', badge:'veg', rating:4.8 },
+  { id:6, name:'Falafel Wrap', desc:'Crispy falafel, hummus, cucumber & tahini', price:189, emoji:'🌯', cat:'Middle Eastern', badge:'veg', rating:4.6 },
+  { id:7, name:'Ramen Bowl', desc:'Rich tonkotsu broth, soft-boiled egg, nori', price:349, emoji:'🍜', cat:'Japanese', badge:'Popular', rating:4.9 },
+  { id:8, name:'Paneer Tikka', desc:'Charcoal-grilled cottage cheese with spices', price:249, emoji:'🧆', cat:'Indian', badge:'veg', rating:4.7 },
+  { id:9, name:'Burrito Bowl', desc:'Grilled chicken, salsa, guac and black beans', price:319, emoji:'🌮', cat:'Mexican', badge:'Popular', rating:4.8 },
+  { id:10, name:'Fish & Chips', desc:'Beer-battered cod with thick-cut fries', price:369, emoji:'🐟', cat:'British', badge:'', rating:4.5 },
+  { id:11, name:'Dim Sum Basket', desc:'Steamed pork and shrimp dumplings', price:289, emoji:'🥟', cat:'Chinese', badge:'Popular', rating:4.7 },
+  { id:12, name:'Greek Salad', desc:'Feta, olives, cucumber and cherry tomatoes', price:199, emoji:'🥗', cat:'Mediterranean', badge:'veg', rating:4.6 },
+];
+
+const categories = ['All', ...new Set(menuData.map(m => m.cat))];
+let cart = [];
+let activeCategory = 'All';
+let promoApplied = false;
+
+// ─── RENDER CARDS ───
+function cardHTML(item, small=false) {
+  const badgeCls = item.badge==='veg'?'veg':item.badge==='spicy'?'spicy':'';
+  const badgeTxt = item.badge==='veg'?'Veg':item.badge==='spicy'?'🌶 Spicy':item.badge||'';
+  return `<div class="food-card">
+    <div class="food-card-img">
+      <span style="font-size:${small?'4rem':'5rem'}">${item.emoji}</span>
+      ${badgeTxt?`<div class="food-badge ${badgeCls}">${badgeTxt}</div>`:''}
+    </div>
+    <div class="food-card-body">
+      <h3>${item.name}</h3>
+      <p>${item.desc}</p>
+      <div class="food-card-footer">
+        <div>
+          <div class="food-price">₹${item.price}</div>
+          <div class="rating">⭐ ${item.rating}</div>
+        </div>
+        <button class="add-btn" onclick="addToCart(${item.id})" title="Add to cart">+</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── HOME FEATURED ───
+function renderFeatured() {
+  const featured = menuData.filter(m => m.badge==='Popular').slice(0,4);
+  document.getElementById('home-featured').innerHTML = featured.map(m=>cardHTML(m)).join('');
+}
+
+// ─── MENU GRID ───
+function renderMenu() {
+  // Category pills
+  const pillsEl = document.getElementById('cat-pills');
+  pillsEl.innerHTML = categories.map(c =>
+    `<div class="cat-pill${c===activeCategory?' active':''}" onclick="setCategory('${c}')">${c}</div>`
+  ).join('');
+  filterMenu();
+}
+
+function setCategory(c) {
+  activeCategory = c;
+  renderMenu();
+}
+
+function filterMenu() {
+  const q = (document.getElementById('search-input')?.value||'').toLowerCase();
+  let items = menuData;
+  if (activeCategory !== 'All') items = items.filter(m => m.cat === activeCategory);
+  if (q) items = items.filter(m => m.name.toLowerCase().includes(q) || m.desc.toLowerCase().includes(q) || m.cat.toLowerCase().includes(q));
+  document.getElementById('menu-grid').innerHTML = items.length
+    ? items.map(m => cardHTML(m)).join('')
+    : `<div style="color:var(--muted);padding:3rem;grid-column:1/-1;text-align:center;">No dishes found. Try a different search.</div>`;
+}
+
+// ─── CART ───
+function addToCart(id) {
+  const item = menuData.find(m => m.id === id);
+  const existing = cart.find(c => c.id === id);
+  if (existing) existing.qty++;
+  else cart.push({...item, qty:1});
+  updateCartCount();
+  showToast(`${item.emoji} ${item.name} added to cart!`);
+  renderCart();
+}
+
+function removeFromCart(id) {
+  cart = cart.filter(c => c.id !== id);
+  updateCartCount();
+  renderCart();
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(c => c.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) removeFromCart(id);
+  else { updateCartCount(); renderCart(); }
+}
+
+function updateCartCount() {
+  const total = cart.reduce((s,c)=>s+c.qty,0);
+  document.getElementById('cart-count').textContent = total;
+}
+
+function renderCart() {
+  const el = document.getElementById('cart-items');
+  if (!cart.length) {
+    el.innerHTML = `<div class="empty-cart"><div class="big">🛒</div><p>Your cart is empty</p><button class="btn-primary" style="margin-top:1.5rem;" onclick="showPage('menu')">Browse Menu</button></div>`;
+    updateSummary(); return;
+  }
+  el.innerHTML = cart.map(c=>`
+    <div class="cart-item">
+      <div class="cart-item-emoji">${c.emoji}</div>
+      <div class="cart-item-info">
+        <h4>${c.name}</h4>
+        <p>${c.cat} · ₹${c.price} each</p>
+      </div>
+      <div class="qty-ctrl">
+        <button class="qty-btn" onclick="changeQty(${c.id},-1)">−</button>
+        <span class="qty-num">${c.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${c.id},1)">+</button>
+      </div>
+      <div class="cart-item-price">₹${c.price * c.qty}</div>
+      <button class="remove-btn" onclick="removeFromCart(${c.id})">✕</button>
+    </div>`).join('');
+  updateSummary();
+}
+
+function updateSummary() {
+  const sub = cart.reduce((s,c)=>s+(c.price*c.qty),0);
+  const del = sub > 0 ? 49 : 0;
+  const disc = promoApplied ? Math.round(sub * 0.1) : 0;
+  const tax = Math.round((sub - disc) * 0.05);
+  const total = sub - disc + del + tax;
+  document.getElementById('sum-sub').textContent = `₹${sub}`;
+  document.getElementById('sum-del').textContent = `₹${del}`;
+  document.getElementById('sum-tax').textContent = `₹${tax}`;
+  document.getElementById('sum-total').textContent = `₹${total}`;
+}
+
+function applyPromo() {
+  const code = document.getElementById('promo-input').value.trim().toUpperCase();
+  const msg = document.getElementById('promo-msg');
+  if (code === 'CRAVE10') {
+    promoApplied = true;
+    msg.style.color = 'var(--success)';
+    msg.textContent = '✓ 10% discount applied!';
+    updateSummary();
+  } else {
+    promoApplied = false;
+    msg.style.color = 'var(--danger)';
+    msg.textContent = '✗ Invalid promo code. Try CRAVE10';
+    updateSummary();
+  }
+}
+
+function checkout() {
+  if (!cart.length) { showToast('🛒 Add some items first!'); return; }
+  cart = [];
+  promoApplied = false;
+  updateCartCount();
+  renderCart();
+  document.getElementById('promo-msg').textContent = '';
+  document.getElementById('promo-input').value = '';
+  showToast('🎉 Order placed successfully! Estimated delivery: 25 mins');
+}
+
+// ─── NAVIGATION ───
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.getElementById('nav-'+name).classList.add('active');
+  window.scrollTo(0,0);
+  if (name==='menu') renderMenu();
+  if (name==='cart') renderCart();
+}
+
+// ─── TOAST ───
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ─── INIT ───
+renderFeatured();
+</script>
+</body>
+</html>
